@@ -4,6 +4,8 @@ import "tachyons";
 import removeYa from "../../assets/remove-ya.png";
 import AsyncSelect from "react-select/lib/Async";
 import { OptionsType, ValueType, ActionMeta } from "react-select/lib/types";
+import throttle from "lodash/throttle";
+import { Cancelable } from "lodash";
 
 interface OptionType {
   value: string;
@@ -15,16 +17,30 @@ interface Props {}
 interface State {}
 
 export class App extends React.Component<Props, State> {
+  private throttledSearch: any;
+
   constructor(props: Props) {
     super(props);
 
+    this.throttledSearch = throttle(this.search, 1000);
+
     this.state = {};
+  }
+
+  componentWillUnmount() {
+    (this.throttledSearch as Cancelable).cancel();
   }
 
   addTrack = (option: OptionType) => {
     console.log("Adding...");
     console.log(option);
   };
+
+  // Use throtteled version instead
+  search = (
+    q: string,
+    callback: (options: OptionsType<OptionType>) => void
+  ): void => {};
 
   loadOptions = (
     inputValue: string,
@@ -58,24 +74,15 @@ export class App extends React.Component<Props, State> {
           <span className="o-50 dib pb2">Currently playing:</span>
           <h3 className="ma0 fw5">Fila Brazillia - Mother Nature's Spies</h3>
         </section>
-        <AsyncSelect
-          cacheOptions
-          loadOptions={this.loadOptions}
-          onChange={this.onChange}
-          noOptionsMessage={({ inputValue }) =>
-            !!inputValue ? "No songs found" : "Search for a song"
-          }
-        />
         <section className="mw8 tc center ph2 pv4">
-          <div>
-            <ul className="searchResults list dib pa0 bg-white br2 pa2 w-100 mw6 tl">
-              {new Array(5).fill("Artist - Title").map((text, idx) => (
-                <li key={idx} className="searchResultItem pa2">
-                  {text}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <AsyncSelect
+            cacheOptions
+            loadOptions={this.loadOptions}
+            onChange={this.onChange}
+            placeholder="Search for a song..."
+            noOptionsMessage={({ inputValue }) => "No songs found"}
+            className="mw6 center"
+          />
         </section>
         <section className="mw8 center ph2">
           <ol reversed className="songList ma0 pa0 fw5">
