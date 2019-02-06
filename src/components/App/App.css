@@ -1,0 +1,39 @@
+.header {
+  background-image: linear-gradient(
+    -225deg,
+    #ff3cac 0%,
+    #784ba0 51%,
+    #2b86c5 100%
+  );
+  font-family: "ZCOOL KuaiLe", cursive;
+}
+
+.headerText {
+  text-shadow: 0 2px 4px #387cbe;
+}
+
+.searchResults {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.searchResultItem:hover {
+  background-color: #31aabb;
+  color: #fff;
+  cursor: pointer;
+}
+
+.songList {
+  list-style-position: inside;
+}
+
+.songListItem:nth-child(odd) {
+  background-color: #d9dde1;
+}
+
+.removeItem {
+  opacity: 0.25;
+}
+
+.removeItem:hover {
+  opacity: 1;
+}
