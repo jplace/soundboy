@@ -1,9 +1,47 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import "./App.css";
 import "tachyons";
 import removeYa from "../../assets/remove-ya.png";
+import AsyncSelect from "react-select/lib/Async";
+import { OptionsType, ValueType, ActionMeta } from "react-select/lib/types";
 
-export class App extends React.Component<{}, {}> {
+interface OptionType {
+  value: string;
+  label: string;
+}
+
+interface Props {}
+
+interface State {}
+
+export class App extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {};
+  }
+
+  addTrack = (option: OptionType) => {
+    console.log("Adding...");
+    console.log(option);
+  };
+
+  loadOptions = (
+    inputValue: string,
+    callback: (options: OptionsType<OptionType>) => void
+  ) => {
+    callback([
+      { value: "banana", label: "Banana" },
+      { value: "apple", label: "Apple" }
+    ]);
+  };
+
+  onChange = (option: ValueType<OptionType>, actionMeta: ActionMeta) => {
+    if (actionMeta.action === "select-option") {
+      this.addTrack(option as OptionType);
+    }
+  };
+
   render() {
     return (
       <div className="sans-serif">
@@ -20,14 +58,15 @@ export class App extends React.Component<{}, {}> {
           <span className="o-50 dib pb2">Currently playing:</span>
           <h3 className="ma0 fw5">Fila Brazillia - Mother Nature's Spies</h3>
         </section>
+        <AsyncSelect
+          cacheOptions
+          loadOptions={this.loadOptions}
+          onChange={this.onChange}
+          noOptionsMessage={({ inputValue }) =>
+            !!inputValue ? "No songs found" : "Search for a song"
+          }
+        />
         <section className="mw8 tc center ph2 pv4">
-          <input
-            className="f6 f5-l input-reset bn br2 black-80 bg-white pa3 lh-solid w-100 mw6"
-            placeholder="Search for a song"
-            type="text"
-            name="search"
-            value=""
-          />
           <div>
             <ul className="searchResults list dib pa0 bg-white br2 pa2 w-100 mw6 tl">
               {new Array(5).fill("Artist - Title").map((text, idx) => (
