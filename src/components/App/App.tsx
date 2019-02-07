@@ -20,6 +20,7 @@ interface Track {
   artist: string;
   name: string;
   uri: string;
+  key?: string;
 }
 
 interface Props {}
@@ -72,8 +73,24 @@ export class App extends React.Component<Props, State> {
         if (response.status !== "SUCCESS") {
           throw response;
         }
-        const results = response.result.results;
-        this.setState({ tracks: results as Track[] });
+
+        const tracks = response.result.results as Track[];
+
+        // Assign a unique key to each track
+        const seen: { [uri: string]: number } = {};
+        for (const track of tracks) {
+          let key: string;
+          if (seen[track.uri]) {
+            key = `${track.uri}-${seen[track.uri]}`;
+            seen[track.uri] += 1;
+          } else {
+            key = track.uri;
+            seen[track.uri] = 1;
+          }
+          track.key = key;
+        }
+
+        this.setState({ tracks });
       })
       .catch(response => console.log(response));
   };
@@ -150,8 +167,7 @@ export class App extends React.Component<Props, State> {
         {tracks && (
           <section className="mw8 center ph2">
             {tracks.length > 0 ? (
-              <ol reversed className="songList ma0 pa0 fw5">
-                {/* todo uri is not a sufficient key with duplicates in a playlist */}
+              <ol reversed className="songList list ma0 pa0">
                 <ReactCSSTransitionGroup
                   transitionName="track"
                   transitionEnterTimeout={500}
@@ -160,9 +176,6 @@ export class App extends React.Component<Props, State> {
                   {tracks.map(track => (
                     <li key={track.uri} className="songListItem pa2 pa3-l">
                       {`${track.artist} - ${track.name} `}
-                      <a href="#" style={{ float: "right" }}>
-                        <img className="removeItem" src={removeYa} />
-                      </a>
                     </li>
                   ))}
                 </ReactCSSTransitionGroup>
