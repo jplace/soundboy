@@ -15,12 +15,23 @@ interface OptionType {
   label: string;
 }
 
+interface Track {
+  artist: string;
+  name: string;
+  uri: string;
+}
+
 interface Props {}
 
 interface State {
-  displayName: string | undefined;
+  displayName: string | null;
+  tracks: Track[] | null;
 }
 
+/*
+ * TODOs
+ * - Clear search field on add track
+ */
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
 
@@ -30,7 +41,8 @@ export class App extends React.Component<Props, State> {
     this.throttledSearch = throttle(this.search, 1000);
 
     this.state = {
-      displayName: undefined
+      displayName: null,
+      tracks: null
     };
   }
 
@@ -45,15 +57,36 @@ export class App extends React.Component<Props, State> {
         this.setState({ displayName: results![0].display_name });
       })
       .catch(response => console.log(response));
+    this.loadSongs();
   }
 
   componentWillUnmount() {
     (this.throttledSearch as Cancelable).cancel();
   }
 
+  loadSongs = () => {
+    transposit
+      .runOperation("get_soundboy_tracks")
+      .then(response => {
+        if (response.status !== "SUCCESS") {
+          throw response;
+        }
+        const results = response.result.results;
+        this.setState({ tracks: results as Track[] });
+      })
+      .catch(response => console.log(response));
+  };
+
   addTrack = (option: OptionType) => {
-    console.log("Adding...");
-    console.log(option);
+    transposit
+      .runOperation("add_to_soundboy", { trackUri: option.value })
+      .then(response => {
+        if (response.status !== "SUCCESS") {
+          throw response;
+        }
+        this.loadSongs();
+      })
+      .catch(response => console.log(response));
   };
 
   // Use throtteled version instead
@@ -61,7 +94,6 @@ export class App extends React.Component<Props, State> {
     q: string,
     callback: (options: OptionsType<OptionType>) => void
   ): void => {
-    console.log("searhcing...");
     transposit
       .runOperation("search", { q })
       .then(response => {
@@ -88,7 +120,7 @@ export class App extends React.Component<Props, State> {
   };
 
   render() {
-    const { displayName } = this.state;
+    const { displayName, tracks } = this.state;
     return (
       <div className="sans-serif">
         <header className="header pa4 tc white">
@@ -114,18 +146,21 @@ export class App extends React.Component<Props, State> {
             className="mw6 center"
           />
         </section>
-        <section className="mw8 center ph2">
-          <ol reversed className="songList ma0 pa0 fw5">
-            {new Array(7).fill("Artist - Title").map((text, idx) => (
-              <li key={idx} className="songListItem pa2 pa3-l">
-                {text}{" "}
-                <a href="#" style={{ float: "right" }}>
-                  <img className="removeItem" src={removeYa} />
-                </a>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {tracks && (
+          <section className="mw8 center ph2">
+            <ol reversed className="songList ma0 pa0 fw5">
+              {/* todo uri is not a sufficient key with duplicates in a playlist */}
+              {tracks.map(track => (
+                <li key={track.uri} className="songListItem pa2 pa3-l">
+                  {`${track.artist} - ${track.name} `}
+                  <a href="#" style={{ float: "right" }}>
+                    <img className="removeItem" src={removeYa} />
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
       </div>
     );
   }
