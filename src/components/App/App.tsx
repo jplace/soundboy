@@ -37,6 +37,7 @@ interface State {
  */
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
+  private refreshInterval: number | null = null;
 
   constructor(props: Props) {
     super(props);
@@ -62,10 +63,15 @@ export class App extends React.Component<Props, State> {
       })
       .catch(response => console.log(response));
     this.loadSongs();
+    window.setInterval(() => this.loadSongs(), 15000);
   }
 
   componentWillUnmount() {
     (this.throttledSearch as Cancelable).cancel();
+
+    if (this.refreshInterval !== null) {
+      window.clearInterval(this.refreshInterval);
+    }
   }
 
   loadSongs = (): Promise<void> => {
