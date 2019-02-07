@@ -7,6 +7,7 @@ import { OptionsType, ValueType, ActionMeta } from "react-select/lib/types";
 import throttle from "lodash/throttle";
 import { Cancelable } from "lodash";
 import { Transposit } from "transposit";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 const transposit: Transposit = new Transposit("joseph", "soundboy");
 
@@ -148,17 +149,36 @@ export class App extends React.Component<Props, State> {
         </section>
         {tracks && (
           <section className="mw8 center ph2">
-            <ol reversed className="songList ma0 pa0 fw5">
-              {/* todo uri is not a sufficient key with duplicates in a playlist */}
-              {tracks.map(track => (
-                <li key={track.uri} className="songListItem pa2 pa3-l">
-                  {`${track.artist} - ${track.name} `}
-                  <a href="#" style={{ float: "right" }}>
-                    <img className="removeItem" src={removeYa} />
-                  </a>
-                </li>
-              ))}
-            </ol>
+            {tracks.length > 0 ? (
+              <ol reversed className="songList ma0 pa0 fw5">
+                {/* todo uri is not a sufficient key with duplicates in a playlist */}
+                <ReactCSSTransitionGroup
+                  transitionName="track"
+                  transitionEnterTimeout={500}
+                  transitionLeaveTimeout={300}
+                >
+                  {tracks.map(track => (
+                    <li key={track.uri} className="songListItem pa2 pa3-l">
+                      {`${track.artist} - ${track.name} `}
+                      <a href="#" style={{ float: "right" }}>
+                        <img className="removeItem" src={removeYa} />
+                      </a>
+                    </li>
+                  ))}
+                </ReactCSSTransitionGroup>
+              </ol>
+            ) : (
+              <article className="br2 ba b--purple bg-lightest-blue">
+                <div className="pa3 pa4-ns dtc-ns v-mid">
+                  <div>
+                    <h2 className="fw4 blue mt0 mb3">SOUNDBOY is empty</h2>
+                    <p className="black-70 measure lh-copy mv0">
+                      Add a song to the SOUNDBOY playlist to begin
+                    </p>
+                  </div>
+                </div>
+              </article>
+            )}
           </section>
         )}
       </div>

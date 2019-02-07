@@ -37,3 +37,21 @@
 .removeItem:hover {
   opacity: 1;
 }
+
+.track-enter {
+  opacity: 0.01;
+}
+
+.track-enter.track-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.track-leave {
+  opacity: 1;
+}
+
+.track-leave.track-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
