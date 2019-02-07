@@ -6,6 +6,9 @@ import AsyncSelect from "react-select/lib/Async";
 import { OptionsType, ValueType, ActionMeta } from "react-select/lib/types";
 import throttle from "lodash/throttle";
 import { Cancelable } from "lodash";
+import { Transposit } from "transposit";
+
+const transposit: Transposit = new Transposit("joseph", "soundboy");
 
 interface OptionType {
   value: string;
@@ -14,7 +17,9 @@ interface OptionType {
 
 interface Props {}
 
-interface State {}
+interface State {
+  displayName: string | undefined;
+}
 
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
@@ -24,7 +29,22 @@ export class App extends React.Component<Props, State> {
 
     this.throttledSearch = throttle(this.search, 1000);
 
-    this.state = {};
+    this.state = {
+      displayName: undefined
+    };
+  }
+
+  componentDidMount() {
+    transposit
+      .runOperation("get_display_name")
+      .then(response => {
+        if (response.status !== "SUCCESS") {
+          throw response;
+        }
+        const results = response.result.results;
+        this.setState({ displayName: results![0].display_name });
+      })
+      .catch(response => console.log(response));
   }
 
   componentWillUnmount() {
@@ -40,16 +60,25 @@ export class App extends React.Component<Props, State> {
   search = (
     q: string,
     callback: (options: OptionsType<OptionType>) => void
-  ): void => {};
+  ): void => {
+    console.log("searhcing...");
+    transposit
+      .runOperation("search", { q })
+      .then(response => {
+        if (response.status !== "SUCCESS") {
+          throw response;
+        }
+        const results = response.result.results;
+        callback(results!);
+      })
+      .catch(response => console.log(response));
+  };
 
   loadOptions = (
     inputValue: string,
     callback: (options: OptionsType<OptionType>) => void
   ) => {
-    callback([
-      { value: "banana", label: "Banana" },
-      { value: "apple", label: "Apple" }
-    ]);
+    this.throttledSearch(inputValue, callback);
   };
 
   onChange = (option: ValueType<OptionType>, actionMeta: ActionMeta) => {
@@ -59,6 +88,7 @@ export class App extends React.Component<Props, State> {
   };
 
   render() {
+    const { displayName } = this.state;
     return (
       <div className="sans-serif">
         <header className="header pa4 tc white">
@@ -67,7 +97,7 @@ export class App extends React.Component<Props, State> {
             find a tune, add to the queue
           </h2>
           <span className="db white pa2 fw5 o-50 sans-serif">
-            spotify: jpwain
+            {displayName || "..."}
           </span>
         </header>
         <section className="w-100 ph2 pv3 tc white bg-dark-gray">
