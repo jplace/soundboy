@@ -28,6 +28,7 @@ interface Props {}
 interface State {
   displayName: string | null;
   tracks: Track[] | null;
+  trackToAdd: OptionType | null;
 }
 
 /*
@@ -44,7 +45,8 @@ export class App extends React.Component<Props, State> {
 
     this.state = {
       displayName: null,
-      tracks: null
+      tracks: null,
+      trackToAdd: null
     };
   }
 
@@ -66,8 +68,8 @@ export class App extends React.Component<Props, State> {
     (this.throttledSearch as Cancelable).cancel();
   }
 
-  loadSongs = () => {
-    transposit
+  loadSongs = (): Promise<void> => {
+    return transposit
       .runOperation("get_soundboy_tracks")
       .then(response => {
         if (response.status !== "SUCCESS") {
@@ -102,7 +104,7 @@ export class App extends React.Component<Props, State> {
         if (response.status !== "SUCCESS") {
           throw response;
         }
-        this.loadSongs();
+        this.loadSongs().then(() => this.setState({ trackToAdd: null }));
       })
       .catch(response => console.log(response));
   };
@@ -132,13 +134,15 @@ export class App extends React.Component<Props, State> {
   };
 
   onChange = (option: ValueType<OptionType>, actionMeta: ActionMeta) => {
+    this.setState({ trackToAdd: option as OptionType });
+
     if (actionMeta.action === "select-option") {
       this.addTrack(option as OptionType);
     }
   };
 
   render() {
-    const { displayName, tracks } = this.state;
+    const { displayName, tracks, trackToAdd } = this.state;
     return (
       <div className="sans-serif">
         <header className="header pa4 tc white">
@@ -158,6 +162,7 @@ export class App extends React.Component<Props, State> {
           <AsyncSelect
             cacheOptions
             loadOptions={this.loadOptions}
+            value={trackToAdd}
             onChange={this.onChange}
             placeholder="Search for a song..."
             noOptionsMessage={({ inputValue }) => "No songs found"}
