@@ -9,6 +9,7 @@ import { Cancelable } from "lodash";
 import { Transposit } from "transposit";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import { AnimatedText } from "../AnimatedText/AnimatedText";
+import { strict } from "assert";
 
 const transposit: Transposit = new Transposit("tapman90", "soundboy");
 
@@ -33,9 +34,18 @@ interface State {
   trackToAdd: OptionType | null;
 }
 
+/**
+ * Features TODOs:
+ *  - Slice to show only upcoming songs
+ *
+ * Current bugs:
+ * - Does not properly support duplicates in playlist (https://github.com/spotify/web-api/issues/1157)
+ * - Does not really cache data properly (since cache key will be unique to each client)
+ */
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
   private refreshInterval: number | null = null;
+  private refreshCacheKey: string = new Date().getTime().toString();
 
   constructor(props: Props) {
     super(props);
@@ -45,7 +55,7 @@ export class App extends React.Component<Props, State> {
     this.state = {
       displayName: null,
       tracks: null,
-      currentlyPlaying: 0,
+      currentlyPlaying: -1,
       trackToAdd: null
     };
   }
@@ -62,7 +72,7 @@ export class App extends React.Component<Props, State> {
       })
       .catch(response => console.log(response));
     this.loadSongs();
-    window.setInterval(() => this.loadSongs(), 15000);
+    window.setInterval(() => this.loadSongs(), 10000);
   }
 
   componentWillUnmount() {
@@ -73,15 +83,23 @@ export class App extends React.Component<Props, State> {
     }
   }
 
-  loadSongs = (): Promise<void> => {
+  loadSongs = (invalidateCache: boolean = false): Promise<void> => {
+    if (invalidateCache) {
+      this.refreshCacheKey = new Date().getTime().toString();
+    }
+
     return transposit
-      .runOperation("get_soundboy_tracks")
+      .runOperation("soundboy_poll", { cacheKey: this.refreshCacheKey })
       .then(response => {
         if (response.status !== "SUCCESS") {
           throw response;
         }
 
-        const tracks = response.result.results as Track[];
+        const results = response.result.results![0] as {
+          tracks: Track[];
+          currentlyPlaying: number;
+        };
+        const { tracks, currentlyPlaying } = results;
 
         // Assign a unique key to each track
         const seen: { [uri: string]: number } = {};
@@ -97,7 +115,7 @@ export class App extends React.Component<Props, State> {
           track.key = key;
         }
 
-        this.setState({ tracks });
+        this.setState({ tracks, currentlyPlaying });
       })
       .catch(response => console.log(response));
   };
@@ -109,7 +127,7 @@ export class App extends React.Component<Props, State> {
         if (response.status !== "SUCCESS") {
           throw response;
         }
-        this.loadSongs().then(() => this.setState({ trackToAdd: null }));
+        this.loadSongs(true).then(() => this.setState({ trackToAdd: null }));
       })
       .catch(response => console.log(response));
   };
