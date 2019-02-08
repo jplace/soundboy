@@ -1,0 +1,19 @@
+/**
+ * Copyright 2019 Transposit Corporation. All Rights Reserved.
+ */
+
+.animeContainer {
+  position: relative;
+}
+
+.animeContainer .text-wrapper {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.animeContainer .letter {
+  transform-origin: 0 100%;
+  display: inline-block;
+  line-height: 1em;
+}
