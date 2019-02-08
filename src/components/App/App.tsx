@@ -8,6 +8,7 @@ import throttle from "lodash/throttle";
 import { Cancelable } from "lodash";
 import { Transposit } from "transposit";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import { AnimatedText } from "../AnimatedText/AnimatedText";
 
 const transposit: Transposit = new Transposit("joseph", "soundboy");
 
@@ -178,6 +179,9 @@ export class App extends React.Component<Props, State> {
             noOptionsMessage={({ inputValue }) => "No songs found"}
             className="mw6 center"
           />
+        </section>
+        <section>
+          <AnimatedText />
         </section>
         {tracks && (
           <section className="mw8 center ph2">
