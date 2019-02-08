@@ -10,7 +10,7 @@ import { Transposit } from "transposit";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import { AnimatedText } from "../AnimatedText/AnimatedText";
 
-const transposit: Transposit = new Transposit("joseph", "soundboy");
+const transposit: Transposit = new Transposit("tapman90", "soundboy");
 
 interface OptionType {
   value: string;
