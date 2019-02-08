@@ -148,6 +148,12 @@ export class App extends React.Component<Props, State> {
 
   render() {
     const { displayName, tracks, currentlyPlaying, trackToAdd } = this.state;
+
+    let currentTrack: Track | null = null;
+    if (currentlyPlaying !== -1 && tracks !== null) {
+      currentTrack = tracks![currentlyPlaying];
+    }
+
     return (
       <div className="sans-serif">
         <header className="header pa4 tc white">
@@ -161,13 +167,13 @@ export class App extends React.Component<Props, State> {
         </header>
         <section className="w-100 ph2 pv3 tc white bg-dark-gray">
           <span className="o-50 dib pb2">Currently playing:</span>
-          <h3 className="ma0 fw5">
-            {!tracks || currentlyPlaying === -1
-              ? "-"
-              : `${tracks[currentlyPlaying].artist} - ${
-                  tracks[currentlyPlaying].name
-                }`}
-          </h3>
+          {currentTrack ? (
+            <AnimatedText className="ma0 fw5">{`${currentTrack.artist} - ${
+              currentTrack.name
+            }`}</AnimatedText>
+          ) : (
+            <h3 className="ma0 fw5">-</h3>
+          )}
         </section>
         <section className="mw8 tc center ph2 pv4">
           <AsyncSelect
@@ -180,20 +186,23 @@ export class App extends React.Component<Props, State> {
             className="mw6 center"
           />
         </section>
-        <section>
-          <AnimatedText />
-        </section>
-        {tracks && (
+        <section />
+        {tracks !== null && (
           <section className="mw8 center ph2">
-            {tracks.length > 0 ? (
+            {tracks !== null && tracks.length > 0 ? (
               <ol reversed className="songList list ma0 pa0">
                 <ReactCSSTransitionGroup
                   transitionName="track"
                   transitionEnterTimeout={500}
                   transitionLeaveTimeout={300}
                 >
-                  {tracks.map(track => (
-                    <li key={track.uri} className="songListItem pa2 pa3-l">
+                  {tracks!.map((track, idx) => (
+                    <li
+                      key={track.uri}
+                      className={`songListItem ${
+                        idx === currentlyPlaying ? "fw6" : ""
+                      } pa2 pa3-l`}
+                    >
                       {`${track.artist} - ${track.name} `}
                     </li>
                   ))}
