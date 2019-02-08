@@ -28,13 +28,10 @@ interface Props {}
 interface State {
   displayName: string | null;
   tracks: Track[] | null;
+  currentlyPlaying: number;
   trackToAdd: OptionType | null;
 }
 
-/*
- * TODOs
- * - Clear search field on add track
- */
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
   private refreshInterval: number | null = null;
@@ -47,6 +44,7 @@ export class App extends React.Component<Props, State> {
     this.state = {
       displayName: null,
       tracks: null,
+      currentlyPlaying: 0,
       trackToAdd: null
     };
   }
@@ -148,7 +146,7 @@ export class App extends React.Component<Props, State> {
   };
 
   render() {
-    const { displayName, tracks, trackToAdd } = this.state;
+    const { displayName, tracks, currentlyPlaying, trackToAdd } = this.state;
     return (
       <div className="sans-serif">
         <header className="header pa4 tc white">
@@ -162,7 +160,13 @@ export class App extends React.Component<Props, State> {
         </header>
         <section className="w-100 ph2 pv3 tc white bg-dark-gray">
           <span className="o-50 dib pb2">Currently playing:</span>
-          <h3 className="ma0 fw5">Fila Brazillia - Mother Nature's Spies</h3>
+          <h3 className="ma0 fw5">
+            {!tracks || currentlyPlaying === -1
+              ? "-"
+              : `${tracks[currentlyPlaying].artist} - ${
+                  tracks[currentlyPlaying].name
+                }`}
+          </h3>
         </section>
         <section className="mw8 tc center ph2 pv4">
           <AsyncSelect
