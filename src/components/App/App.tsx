@@ -168,8 +168,10 @@ export class App extends React.Component<Props, State> {
     const { displayName, tracks, currentlyPlaying, trackToAdd } = this.state;
 
     let currentTrack: Track | null = null;
+    let upcomingTracks: Track[] | null = tracks;
     if (currentlyPlaying !== -1 && tracks !== null) {
       currentTrack = tracks![currentlyPlaying];
+      upcomingTracks = tracks.slice(currentlyPlaying);
     }
 
     return (
@@ -206,19 +208,19 @@ export class App extends React.Component<Props, State> {
         </section>
         <section />
         {tracks !== null && (
-          <section className="mw8 center ph2">
+          <section className="mw8 mb4 center ph2">
             {tracks !== null && tracks.length > 0 ? (
               <ol reversed className="songList list ma0 pa0">
                 <ReactCSSTransitionGroup
                   transitionName="track"
-                  transitionEnterTimeout={500}
-                  transitionLeaveTimeout={300}
+                  transitionEnterTimeout={1000}
+                  transitionLeaveTimeout={500}
                 >
-                  {tracks!.map((track, idx) => (
+                  {upcomingTracks!.map((track, idx) => (
                     <li
                       key={track.uri}
                       className={`songListItem ${
-                        idx === currentlyPlaying ? "fw6" : ""
+                        currentTrack && idx === 0 ? "fw6" : ""
                       } pa2 pa3-l`}
                     >
                       {`${track.artist} - ${track.name} `}

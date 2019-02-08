@@ -19,7 +19,22 @@ export class AnimatedText extends React.Component<Props, State> {
     super(props);
   }
 
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.children !== this.props.children) {
+      this.stopAnimation();
+      this.startAnimation();
+    }
+  }
+
   componentDidMount() {
+    this.startAnimation();
+  }
+
+  componentWillUnmount() {
+    this.stopAnimation();
+  }
+
+  startAnimation = () => {
     anime
       .timeline({ loop: true })
       .add({
@@ -41,12 +56,16 @@ export class AnimatedText extends React.Component<Props, State> {
         easing: "easeOutExpo",
         delay: 3000
       });
-  }
+  };
+
+  stopAnimation = () => {
+    anime.remove(".animeContainer .letter");
+  };
 
   render() {
     const { children, className } = this.props;
     return (
-      <h3 className={`animeContainer ${className || ""}`}>
+      <h3 key={children} className={`animeContainer ${className || ""}`}>
         <span className="text-wrapper">
           <span className="letters">
             {children.split("").map((char, idx) =>
