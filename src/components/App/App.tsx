@@ -35,9 +35,6 @@ interface State {
 }
 
 /**
- * Features TODOs:
- *  - Slice to show only upcoming songs
- *
  * Current bugs:
  * - Does not properly support duplicates in playlist (https://github.com/spotify/web-api/issues/1157)
  * - Does not really cache data properly (since cache key will be unique to each client)
