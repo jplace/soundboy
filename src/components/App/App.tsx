@@ -62,7 +62,7 @@ export class App extends React.Component<Props, State> {
 
   componentDidMount() {
     window.addEventListener("focus", this.onWindowFocus);
-    window.addEventListener("blur", this.onWindowFocus);
+    window.addEventListener("blur", this.onWindowBlur);
     this.onWindowFocus();
 
     transposit
