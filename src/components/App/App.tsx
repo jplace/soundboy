@@ -91,6 +91,7 @@ export class App extends React.Component<Props, State> {
   onWindowBlur = () => {
     if (this.refreshInterval !== null) {
       window.clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
     }
   };
 
@@ -101,6 +102,7 @@ export class App extends React.Component<Props, State> {
     window.removeEventListener("blur", this.onWindowBlur);
     if (this.refreshInterval !== null) {
       window.clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
     }
   }
 
