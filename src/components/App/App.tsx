@@ -11,7 +11,11 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import { AnimatedText } from "../AnimatedText/AnimatedText";
 import { strict } from "assert";
 
-const transposit: Transposit = new Transposit("tapman90", "soundboy");
+const transposit: Transposit = new Transposit(
+  "https://soundboy-44uqk.transposit.io"
+);
+
+const REFRESH_MS = 5000; // 5 seconds
 
 interface OptionType {
   value: string;
@@ -42,7 +46,6 @@ interface State {
 export class App extends React.Component<Props, State> {
   private throttledSearch: any;
   private refreshInterval: number | null = null;
-  private refreshCacheKey: string = new Date().getTime().toString();
 
   constructor(props: Props) {
     super(props);
@@ -58,6 +61,10 @@ export class App extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    window.addEventListener("focus", this.onWindowFocus);
+    window.addEventListener("blur", this.onWindowFocus);
+    this.onWindowFocus();
+
     transposit
       .runOperation("get_display_name")
       .then(response => {
@@ -68,25 +75,38 @@ export class App extends React.Component<Props, State> {
         this.setState({ displayName: results![0].display_name });
       })
       .catch(response => console.log(response));
+
     this.loadSongs();
-    window.setInterval(() => this.loadSongs(), 10000);
   }
+
+  onWindowFocus = () => {
+    if (this.refreshInterval == null) {
+      this.refreshInterval = window.setInterval(
+        () => this.loadSongs(),
+        REFRESH_MS
+      );
+    }
+  };
+
+  onWindowBlur = () => {
+    if (this.refreshInterval !== null) {
+      window.clearInterval(this.refreshInterval);
+    }
+  };
 
   componentWillUnmount() {
     (this.throttledSearch as Cancelable).cancel();
 
+    window.removeEventListener("focus", this.onWindowFocus);
+    window.removeEventListener("blur", this.onWindowBlur);
     if (this.refreshInterval !== null) {
       window.clearInterval(this.refreshInterval);
     }
   }
 
-  loadSongs = (invalidateCache: boolean = false): Promise<void> => {
-    if (invalidateCache) {
-      this.refreshCacheKey = new Date().getTime().toString();
-    }
-
+  loadSongs = (): Promise<void> => {
     return transposit
-      .runOperation("soundboy_poll", { cacheKey: this.refreshCacheKey })
+      .runOperation("soundboy_poll")
       .then(response => {
         if (response.status !== "SUCCESS") {
           throw response;
@@ -124,7 +144,7 @@ export class App extends React.Component<Props, State> {
         if (response.status !== "SUCCESS") {
           throw response;
         }
-        this.loadSongs(true).then(() => this.setState({ trackToAdd: null }));
+        this.loadSongs().then(() => this.setState({ trackToAdd: null }));
       })
       .catch(response => console.log(response));
   };
